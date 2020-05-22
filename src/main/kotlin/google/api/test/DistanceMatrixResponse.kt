@@ -1,50 +1,60 @@
 package google.api.test
 
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Parser
+import com.squareup.moshi.FromJson
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonClass
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 class DistanceMatrixResponse(val response: String) {
 
     var success: Boolean = false
     var message: String = ""
-    var json: JsonObject? = null
+//    var json: JsonObject? = null
 
     var origin: String? = ""
     var destination: String? = ""
     var distance: String? = ""
     var duration: String? = ""
 
-    private val parser: Parser = Parser()
 
     init {
-        // parse the API response into a JsonObject
-        val stringBuilder: StringBuilder = StringBuilder(response)
-        json = parser.parse(stringBuilder) as JsonObject
+        val moshi: Moshi = Moshi.Builder()
+                                .add(KotlinJsonAdapterFactory())
+                                .build()
+        val jsonAdapter: JsonAdapter<DistanceMatrixData> = moshi.adapter(DistanceMatrixData::class.java)
 
-        // check if API call was successful
-        val elements: JsonObject? = json!!.array<JsonObject>("rows")?.get(0)?.
-        array<JsonObject>("elements")?.get(0)
-
-        // if successful, extract data from JsonObject
-        if (elements?.string("status") == "OK") {
-            success = true
-
-            origin = json!!.array<String>("origin_addresses")?.get(0)
-            destination = json!!.array<String>("destination_addresses")?.get(0)
-
-            val distanceObject: JsonObject = elements?.get("distance") as JsonObject
-            distance = distanceObject["text"] as String?
-
-            val durationObject: JsonObject = elements?.get("duration") as JsonObject
-            duration = durationObject["text"] as String?
-
-            message =  """
-                       The distance from ${origin} to ${destination} is ${distance}.
-                       The drive will take ${duration}.
-                       """.trimIndent()
-        } else {
-            message = "Invalid input."
-        }
+        val data: DistanceMatrixData? = jsonAdapter.fromJson(response)
+        message = data?.rows?.get(0)?.elements.toString()
     }
 }
+@JsonClass(generateAdapter = true)
+data class Data(val text: String, val value: Int)
 
+@JsonClass(generateAdapter = true)
+data class Item(val distance: Data, val duration: Data, val status: String)
+
+@JsonClass(generateAdapter = true)
+data class Row(val elements: List<Item>)
+
+@JsonClass(generateAdapter = true)
+data class DistanceMatrixData(val origin_addresses: List<String>,
+                              val destination_addresses: List<String>,
+                              val rows: List<Row>,
+                              val status: String)
+
+@JsonClass(generateAdapter = true)
+data class DistanceMatrixJson(val origin_addresses: List<String>,
+                            val destination_addresses: List<String>,
+                            val rows: List<Any>,
+                            val status: String)
+
+//@JsonClass(generateAdapter = true)
+//class DistanceMatrixDataAdapter {
+//    @FromJson
+//    fun dataFromJson(json: DistanceMatrixJson): DistanceMatrixData {
+//
+//
+//        return DistanceMatrixData(json.origin_addresses, json.destination_addresses, json.rows, json.status)
+//    }
+//}

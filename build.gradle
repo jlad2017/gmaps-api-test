@@ -29,8 +29,7 @@ dependencies {
     implementation "javax.annotation:javax.annotation-api"
     implementation "io.micronaut:micronaut-http-server-netty"
     implementation "io.micronaut:micronaut-http-client"
-    implementation "io.micronaut:micronaut-views"
-    implementation 'com.beust:klaxon:5.0.1'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.9.2'
     kapt platform("io.micronaut:micronaut-bom:$micronautVersion")
     kapt "io.micronaut:micronaut-inject-java"
     kapt "io.micronaut:micronaut-validation"
