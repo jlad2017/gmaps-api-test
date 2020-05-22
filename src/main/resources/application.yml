@@ -1,0 +1,5 @@
+micronaut:
+  application:
+    name: google-api-test
+  google-api:
+    key: "AIzaSyAE0VgNlDTHIfZsYvfok2hbYo3efr-k1zU"

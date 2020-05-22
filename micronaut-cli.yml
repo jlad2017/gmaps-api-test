@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: google.api.test
+---
+testFramework: kotlintest
+sourceLanguage: kotlin
