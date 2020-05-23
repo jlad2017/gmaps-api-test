@@ -17,7 +17,7 @@ class DistanceMatrixController (@Value("\${micronaut.google-api.key}") apiKey: S
 
     @Get("/origin={origin}&destination={destination}")
     fun index(origin: String, destination: String): String {
-        val response: DistanceMatrixResponse = distanceMatrix.getDistanceAndTime(origin, destination)
+        val response: DistanceMatrixResponse = distanceMatrix.getDistanceMatrix(origin, destination)
         return response.message
     }
 

@@ -8,7 +8,7 @@ class DistanceMatrix(private val apiKey: String) {
 
     private val BASE_URL = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
 
-    fun getDistanceAndTime(origin: String, destination: String): DistanceMatrixResponse {
+    fun getDistanceMatrix(origin: String, destination: String): DistanceMatrixResponse {
         /**
          * Makes a call to Google Maps Distance Matrix API
          * and returns a DistanceMatrixResponse object
@@ -18,7 +18,7 @@ class DistanceMatrix(private val apiKey: String) {
         val destination: String = destination.replace(" ", "+")
 
         // build the url for the API call and get response
-        val url: String = "$BASE_URL&origins=$origin&destinations=$destination&key=$apiKey"
+        val url: String = "$BASE_URL&origins=$origin|los+angeles&destinations=$destination|los+angeles&key=$apiKey"
         val response: String = URL(url).readText()
 
         return DistanceMatrixResponse(response)
