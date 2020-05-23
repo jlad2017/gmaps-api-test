@@ -19,10 +19,10 @@ data class Element(val distance: Distance=Distance(),
 data class Row(val elements: List<Element>)
 
 @JsonClass(generateAdapter = true)
-data class DistanceMatrixData(val origin_addresses: List<String>,
-                              val destination_addresses: List<String>,
-                              val rows: List<Row>,
-                              val status: String)
+data class DistanceMatrix(val origin_addresses: List<String>,
+                          val destination_addresses: List<String>,
+                          val rows: List<Row>,
+                          val status: String)
 
 data class DistanceMatrixItem(val origin: String,
                               val destination: String,

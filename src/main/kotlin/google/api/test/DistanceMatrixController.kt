@@ -8,7 +8,7 @@ import javax.inject.Inject
 @Controller("/distance-matrix")
 class DistanceMatrixController (@Value("\${micronaut.google-api.key}") apiKey: String) {
 
-    @Inject val distanceMatrix = DistanceMatrix(apiKey)
+    @Inject val service = DistanceMatrixService(apiKey)
 
     @Get("/")
     fun index(): String {
@@ -17,8 +17,8 @@ class DistanceMatrixController (@Value("\${micronaut.google-api.key}") apiKey: S
 
     @Get("/origin={origin}&destination={destination}")
     fun index(origin: String, destination: String): String {
-        val response: DistanceMatrixResponse = distanceMatrix.getDistanceMatrix(origin, destination)
-        return response.message
+        val response: DistanceMatrixService.DistanceMatrixResponse = service.getDistanceMatrix(origin, destination)
+        return if (response.success) response.message else "Invalid request."
     }
 
 }
