@@ -1,5 +1,0 @@
-micronaut:
-  application:
-    name: google-api-test
-  google-api:
-    key: "SECRET"
