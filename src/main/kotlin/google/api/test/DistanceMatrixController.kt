@@ -6,7 +6,7 @@ import io.micronaut.http.annotation.Get
 import javax.inject.Inject
 
 @Controller("/distance-matrix")
-class DistanceMatrixController (@Value("\${micronaut.google-api.key}") apiKey: String) {
+class DistanceMatrixController(@Value("\${micronaut.google-api.key}") apiKey: String) {
 
     @Inject val service = DistanceMatrixService(apiKey)
 
@@ -18,7 +18,7 @@ class DistanceMatrixController (@Value("\${micronaut.google-api.key}") apiKey: S
     @Get("/origin={origin}&destination={destination}")
     fun index(origin: String, destination: String): String {
         val response: DistanceMatrixService.DistanceMatrixResponse = service.getDistanceMatrix(origin, destination)
-        return if (response.success) response.message else "Invalid request."
+        return response.message
     }
 
 }

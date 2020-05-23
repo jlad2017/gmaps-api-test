@@ -7,11 +7,7 @@ import java.net.URL
 import javax.inject.Singleton
 
 @Singleton
-class DistanceMatrixService(private val apiKey: String) {
-    /**
-     * Makes calls to the Google Maps Distance Matrix API and
-     * parses the response into DistanceMatrixItem objects
-     */
+class PlacesService(private val apiKey: String) {
 
     private val BASE_URL = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
 
@@ -37,7 +33,7 @@ class DistanceMatrixService(private val apiKey: String) {
          * and stores the Distance Matrix data in a list
          */
 
-        var status: String = ""
+        var success: Boolean = false
         var message: String = ""
         var items: MutableList<DistanceMatrixItem> = ArrayList()
 
@@ -48,15 +44,13 @@ class DistanceMatrixService(private val apiKey: String) {
             val jsonAdapter: JsonAdapter<DistanceMatrix> = moshi.adapter(DistanceMatrix::class.java)
             val data: DistanceMatrix? = jsonAdapter.fromJson(response)
 
-            status = data?.status ?: ""
-            when (status) {
-                "OK"                    -> { items = getItems(data!!); items.forEach { message += getItemMessage(it) } }
-                "INVALID_REQUEST"       -> message = "The given request was invalid."
-                "MAX_ELEMENTS_EXCEEDED" -> message = "The requests exceed the qer-query limit."
-                "OVER_DAILY_LIMIT"      -> message = "There was an issue with the API key."
-                "OVER_QUERY_LIMIT"      -> message = "The API has received too many requests from this application."
-                "REQUEST_DENIED"        -> message = "This application cannot use the Distance Matrix API."
-                "UNKNOWN_ERROR"         -> message = "The request could not be processed due to a server error. Please try again."
+            if (data?.status == "OK") {
+                success = true
+                items = getItems(data)
+                items.forEach { message += getItemMessage(it) }
+            } else {
+                success = false
+                message = "Invalid request."
             }
         }
 
@@ -84,23 +78,21 @@ class DistanceMatrixService(private val apiKey: String) {
 
         private fun getItemMessage(item: DistanceMatrixItem): String {
             /**
-             * Return the message to be displayed
+             * Get the message to be displayed
              * for the origin/destination pair
              */
-
-            return when (item.status) {
-                "OK"                       -> """
-                                              The distance from ${item.origin} to ${item.destination} is ${item.distance}.
-                                              The drive will take ${item.duration}. 
-                                              ${System.lineSeparator()} ${System.lineSeparator()}
-                                              """.trimIndent()
-                "NOT_FOUND"                 -> "The origin ${item.origin} and/or destination ${item.destination} could not be geocoded."
-                "ZERO_RESULTS"              -> "No route from ${item.origin} to ${item.destination} could be found."
-                "MAX_ROUTE_LENGTH_EXCEEDED" -> "The requested route is too long and cannot be processed."
-                else                        -> "Undefined error."
+            if (item.status == "OK") {
+                return  """
+                    The distance from ${item.origin} to ${item.destination} is ${item.distance}.
+                    The drive will take ${item.duration}. 
+                    ${System.lineSeparator()} ${System.lineSeparator()}
+                    """.trimIndent()
+            } else if (item.status == "NOT_FOUND") {
+                return  """
+                    The distance from ${item.origin} to ${item.destination} could not be found.
+                    """.trimIndent()
             }
+            return "Undefined error."
         }
     }
 }
-
-
