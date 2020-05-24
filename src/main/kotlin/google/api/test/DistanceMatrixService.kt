@@ -9,23 +9,26 @@ import javax.inject.Singleton
 /**
  * Makes calls to the Google Maps Distance Matrix API and
  * parses the response into DistanceMatrixItem objects
+ * (Uses Moshi for the JSON string parsing)
  */
 @Singleton
 class DistanceMatrixService(private val apiKey: String) {
 
-    private val baseURL = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
+    private val baseURL = "https://maps.googleapis.com/maps/api/distancematrix/json"
 
     /**
      * Makes a call to Google Maps Distance Matrix API
      * and returns a DistanceMatrixResponse object
      */
     fun getResponse(origin: String, destination: String): DistanceMatrixResponse {
-        // convert origin/destination API-friendly strings
+        val units = "imperial"
+
+        // convert origin/destination to API-friendly strings
         val origin: String = origin.replace(" ", "+")
         val destination: String = destination.replace(" ", "+")
 
         // build the url for the API call and get response
-        val url: String = "$baseURL&origins=$origin&destinations=$destination&key=$apiKey"
+        val url = "$baseURL?units=$units&origins=$origin&destinations=$destination&key=$apiKey"
         val response: String = URL(url).readText()
 
         return DistanceMatrixResponse(response)
@@ -66,7 +69,7 @@ class DistanceMatrixService(private val apiKey: String) {
          */
         private fun getItems(data: DistanceMatrix): MutableList<DistanceMatrixItem> {
             // flatten rows (list of list of elements) into one list of elements
-            val elements: MutableList<Element> = ArrayList()
+            val elements: MutableList<DistanceMatrix.Row.Element> = ArrayList()
             data.rows.forEach { list -> elements.addAll(list.elements) }
 
             // TODO(): get rid of the nested for-loop
@@ -75,7 +78,7 @@ class DistanceMatrixService(private val apiKey: String) {
             val itemList = ArrayList<DistanceMatrixItem>()
             for (origin: String in data.origin_addresses) {
                 for (destination: String in data.destination_addresses) {
-                    val element: Element = elements[i]
+                    val element: DistanceMatrix.Row.Element = elements[i]
                     itemList.add(DistanceMatrixItem(origin,
                             destination,
                             element.distance.text,
