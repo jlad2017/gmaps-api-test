@@ -11,7 +11,7 @@ class PlacesService(private val apiKey: String) {
 
     private val BASE_URL = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
 
-    fun getDistanceMatrix(origin: String, destination: String): DistanceMatrixResponse {
+    fun getPlaces(origin: String, destination: String): DistanceMatrixResponse {
         /**
          * Makes a call to Google Maps Distance Matrix API
          * and returns a DistanceMatrixResponse object

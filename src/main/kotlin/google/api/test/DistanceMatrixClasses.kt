@@ -10,7 +10,6 @@ data class Distance(val text: String="", val value: Int=0)
 data class Duration(val text: String="", val value: Int=0)
 
 @JsonClass(generateAdapter = true)
-// we need to provide default value for distance/duration in the case that status is NOT_FOUND
 data class Element(val distance: Distance=Distance(),
                    val duration: Duration=Duration(),
                    val status: String)

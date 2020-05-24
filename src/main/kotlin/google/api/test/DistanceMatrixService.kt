@@ -6,36 +6,36 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.net.URL
 import javax.inject.Singleton
 
+/**
+ * Makes calls to the Google Maps Distance Matrix API and
+ * parses the response into DistanceMatrixItem objects
+ */
 @Singleton
 class DistanceMatrixService(private val apiKey: String) {
+
+    private val baseURL = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
+
     /**
-     * Makes calls to the Google Maps Distance Matrix API and
-     * parses the response into DistanceMatrixItem objects
+     * Makes a call to Google Maps Distance Matrix API
+     * and returns a DistanceMatrixResponse object
      */
-
-    private val BASE_URL = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
-
-    fun getDistanceMatrix(origin: String, destination: String): DistanceMatrixResponse {
-        /**
-         * Makes a call to Google Maps Distance Matrix API
-         * and returns a DistanceMatrixResponse object
-         */
+    fun getResponse(origin: String, destination: String): DistanceMatrixResponse {
         // convert origin/destination API-friendly strings
         val origin: String = origin.replace(" ", "+")
         val destination: String = destination.replace(" ", "+")
 
         // build the url for the API call and get response
-        val url: String = "$BASE_URL&origins=$origin&destinations=$destination&key=$apiKey"
+        val url: String = "$baseURL&origins=$origin&destinations=$destination&key=$apiKey"
         val response: String = URL(url).readText()
 
         return DistanceMatrixResponse(response)
     }
 
+    /**
+     * Parses the JSON response string given by the service
+     * and stores the Distance Matrix data in a list
+     */
     class DistanceMatrixResponse(response: String) {
-        /**
-         * Parses the JSON response string given by the service
-         * and stores the Distance Matrix data in a list
-         */
 
         var status: String = ""
         var message: String = ""
@@ -60,11 +60,11 @@ class DistanceMatrixService(private val apiKey: String) {
             }
         }
 
+        /**
+         * Return a list of DistanceMatrixItems
+         * for each origin/destination pair
+         */
         private fun getItems(data: DistanceMatrix): MutableList<DistanceMatrixItem> {
-            /**
-             * Return a list of DistanceMatrixItems
-             * for each origin/destination pair
-             */
             // flatten rows (list of list of elements) into one list of elements
             val elements: MutableList<Element> = ArrayList()
             data.rows.forEach { list -> elements.addAll(list.elements) }
@@ -72,22 +72,27 @@ class DistanceMatrixService(private val apiKey: String) {
             // TODO(): get rid of the nested for-loop
             // add a DistanceMatrixItem to item list for each origin/destination pair
             var i = 0
+            val itemList = ArrayList<DistanceMatrixItem>()
             for (origin: String in data.origin_addresses) {
                 for (destination: String in data.destination_addresses) {
                     val element: Element = elements[i]
-                    items.add(DistanceMatrixItem(origin, destination, element.distance.text, element.duration.text, element.status))
+                    itemList.add(DistanceMatrixItem(origin,
+                            destination,
+                            element.distance.text,
+                            element.duration.text,
+                            element.status
+                    ))
                     i++
                 }
             }
-            return items
+            return itemList
         }
 
+        /**
+         * Return the message to be displayed
+         * for the origin/destination pair
+         */
         private fun getItemMessage(item: DistanceMatrixItem): String {
-            /**
-             * Return the message to be displayed
-             * for the origin/destination pair
-             */
-
             return when (item.status) {
                 "OK"                       -> """
                                               The distance from ${item.origin} to ${item.destination} is ${item.distance}.
