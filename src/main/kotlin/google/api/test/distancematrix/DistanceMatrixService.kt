@@ -1,4 +1,4 @@
-package google.api.test
+package google.api.test.distancematrix
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi

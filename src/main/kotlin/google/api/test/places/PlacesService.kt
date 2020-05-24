@@ -1,5 +1,6 @@
-package google.api.test
+package google.api.test.places
 
+import google.api.test.places.Places.Place as Place
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -47,7 +48,7 @@ class PlacesService(private val apiKey: String) {
 
         var success: Boolean = false
         var message: String = ""
-        var items: MutableList<Places.Place> = ArrayList()
+        var items: MutableList<Place> = ArrayList()
 
         init {
             // deserialize the JSON response string into a Places object
@@ -64,7 +65,7 @@ class PlacesService(private val apiKey: String) {
             }
         }
 
-        private fun getItemMessage(item: Places.Place): String {
+        private fun getItemMessage(item: Place): String {
             /**
              * Get the message to be displayed
              * for the origin/destination pair

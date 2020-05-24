@@ -1,4 +1,4 @@
-package google.api.test
+package google.api.test.distancematrix
 
 import io.micronaut.context.annotation.Value
 import io.micronaut.http.MediaType
