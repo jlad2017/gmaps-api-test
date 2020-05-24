@@ -18,8 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class PlacesService(private val apiKey: String) {
 
-    private val BASE_URL = "https://maps.googleapis.com/maps/api/place/json"
-    private var input: String = ""
+    private val BASE_URL = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
 
     /**
      * Makes a call to Google Maps Places API
@@ -30,7 +29,6 @@ class PlacesService(private val apiKey: String) {
      * @param locationbias an optional parameter to bias the result towards the given location
      */
     fun getResponse(input: String, inputtype: String, @Nullable locationbias: String?): PlacesResponse {
-        this.input = input
         val fields = "business_status,formatted_address,geometry,icon," +
                 "name,permanently_closed,photos,place_id,plus_code,types"
 
@@ -84,7 +82,7 @@ class PlacesService(private val apiKey: String) {
          */
         private fun getItemMessage(item: Place): String {
             return  """
-                    
+                    One candidate is ${item.name}. It is located at ${item.formatted_address}.
                     """.trimIndent()
         }
     }
