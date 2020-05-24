@@ -9,9 +9,11 @@ import javax.annotation.Nullable
 import javax.inject.Singleton
 
 /**
- * Makes calls to the Google Maps Places API and
+ * A service that makes calls to the Google Maps Places API and
  * parses the response into Place objects
  * (Uses Jackson for the JSON string parsing)
+ *
+ * @param apiKey my MEGA SECRET Google Maps API key
  */
 @Singleton
 class PlacesService(private val apiKey: String) {
@@ -22,10 +24,15 @@ class PlacesService(private val apiKey: String) {
     /**
      * Makes a call to Google Maps Places API
      * and returns a PlacesResponse object
+     *
+     * @param input a place search query
+     * @param inputtype the type of input, either textquery or phonenumber
+     * @param locationbias an optional parameter to bias the result towards the given location
      */
     fun getResponse(input: String, inputtype: String, @Nullable locationbias: String?): PlacesResponse {
         this.input = input
-        val fields = "business_status,formatted_address,geometry,icon,name,permanently_closed,photos,place_id,plus_code,types"
+        val fields = "business_status,formatted_address,geometry,icon," +
+                "name,permanently_closed,photos,place_id,plus_code,types"
 
         // convert origin/destination to API-friendly strings
         val input: String = input.replace(" ", "+")
@@ -43,10 +50,12 @@ class PlacesService(private val apiKey: String) {
     /**
      * Parses the JSON response string given by the service
      * and stores the Places data in a list
+     *
+     * @param response the API response, formatted as a JSON string
      */
     class PlacesResponse(response: String) {
 
-        var success: Boolean = false
+        var status: String = ""
         var message: String = ""
         var items: MutableList<Place> = ArrayList()
 
@@ -55,21 +64,25 @@ class PlacesService(private val apiKey: String) {
             val mapper: ObjectMapper = jacksonObjectMapper()
             val data: Places? = mapper.readValue(response)
 
-            if (data?.status == "OK") {
-                success = true
-                items = data.candidates as MutableList<Places.Place>
-                items.forEach { message += getItemMessage(it) }
-            } else {
-                success = false
-                message = "Invalid request."
+            status = data?.status ?: ""
+            when (status) {
+                "OK"                    -> { items = data!!.candidates as MutableList<Place>; items.forEach { message += getItemMessage(it) } }
+                "INVALID_REQUEST"       -> message = "The given request was invalid."
+                "MAX_ELEMENTS_EXCEEDED" -> message = "The requests exceed the qer-query limit."
+                "OVER_DAILY_LIMIT"      -> message = "There was an issue with the API key."
+                "OVER_QUERY_LIMIT"      -> message = "The API has received too many requests from this application."
+                "REQUEST_DENIED"        -> message = "This application cannot use the Distance Matrix API."
+                "UNKNOWN_ERROR"         -> message = "The request could not be processed due to a server error. Please try again."
+                else                    -> message = "Internal server error."
             }
         }
 
+        /**
+         * Gets the message to be displayed for the given Place
+         *
+         * @param item the Place containing the data
+         */
         private fun getItemMessage(item: Place): String {
-            /**
-             * Get the message to be displayed
-             * for the origin/destination pair
-             */
             return  """
                     
                     """.trimIndent()

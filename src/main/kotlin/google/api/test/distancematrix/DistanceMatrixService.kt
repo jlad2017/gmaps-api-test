@@ -7,9 +7,11 @@ import java.net.URL
 import javax.inject.Singleton
 
 /**
- * Makes calls to the Google Maps Distance Matrix API and
- * parses the response into DistanceMatrixItem objects
+ * A service that makes calls to the Google Maps Distance Matrix API
+ * and parses the response into DistanceMatrixItem objects
  * (Uses Moshi for the JSON string parsing)
+ *
+ * @param apiKey my MEGA SECRET Google Maps API key
  */
 @Singleton
 class DistanceMatrixService(private val apiKey: String) {
@@ -19,6 +21,9 @@ class DistanceMatrixService(private val apiKey: String) {
     /**
      * Makes a call to Google Maps Distance Matrix API
      * and returns a DistanceMatrixResponse object
+     *
+     * @param origin the start location
+     * @param destination the end location
      */
     fun getResponse(origin: String, destination: String): DistanceMatrixResponse {
         val units = "imperial"
@@ -37,6 +42,8 @@ class DistanceMatrixService(private val apiKey: String) {
     /**
      * Parses the JSON response string given by the service
      * and stores the Distance Matrix data in a list
+     *
+     * @param response the API response, formatted as a JSON string
      */
     class DistanceMatrixResponse(response: String) {
 
@@ -49,6 +56,7 @@ class DistanceMatrixService(private val apiKey: String) {
                     .add(KotlinJsonAdapterFactory())
                     .build()
             val jsonAdapter: JsonAdapter<DistanceMatrix> = moshi.adapter(DistanceMatrix::class.java)
+            // deserialize the JSON response string into a DistanceMatrix object
             val data: DistanceMatrix? = jsonAdapter.fromJson(response)
 
             status = data?.status ?: ""
@@ -60,19 +68,22 @@ class DistanceMatrixService(private val apiKey: String) {
                 "OVER_QUERY_LIMIT"      -> message = "The API has received too many requests from this application."
                 "REQUEST_DENIED"        -> message = "This application cannot use the Distance Matrix API."
                 "UNKNOWN_ERROR"         -> message = "The request could not be processed due to a server error. Please try again."
+                else                    -> message = "Internal server error."
             }
         }
 
         /**
-         * Return a list of DistanceMatrixItems
-         * for each origin/destination pair
+         * Returns a list of DistanceMatrixItem for each
+         * origin/destination pair in the Distance Matrix
+         *
+         * @param data the DistanceMatrix representating the JSON response
          */
         private fun getItems(data: DistanceMatrix): MutableList<DistanceMatrixItem> {
             // flatten rows (list of list of elements) into one list of elements
             val elements: MutableList<DistanceMatrix.Row.Element> = ArrayList()
             data.rows.forEach { list -> elements.addAll(list.elements) }
 
-            // TODO(): get rid of the nested for-loop
+            // TODO: get rid of the nested for-loop
             // add a DistanceMatrixItem to item list for each origin/destination pair
             var i = 0
             val itemList = ArrayList<DistanceMatrixItem>()
@@ -92,8 +103,11 @@ class DistanceMatrixService(private val apiKey: String) {
         }
 
         /**
-         * Return the message to be displayed
-         * for the origin/destination pair
+         * Returns the message to be displayed
+         * for the given origin/destination pair
+         *
+         * @param item the DistanceMatrixItem containing
+         *             the endpoints, distance, and duration
          */
         private fun getItemMessage(item: DistanceMatrixItem): String {
             return when (item.status) {
